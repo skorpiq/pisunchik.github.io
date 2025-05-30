@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сертификаты | Red Team Specialist</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/certificates.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="header-title">[CERTIFICATES]</h1>
+                <a href="index.html" class="btn-red">На главную</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="section certificates">
+            <div class="container">
+                <h2 class="section-title">Мои сертификаты</h2>
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="offensive">Offensive Security</button>
+                    <button class="filter-btn" data-filter="sans">SANS</button>
+                    <button class="filter-btn" data-filter="other">Другие</button>
+                </div>
+                <div class="certificates-grid">
+                    <div class="certificate-card" data-category="offensive">
+                        <div class="certificate-img">
+                            <img src="assets/images/oscp.jpg" alt="OSCP">
+                        </div>
+                        <div class="certificate-info">
+                            <h3>OSCP</h3>
+                            <p>Offensive Security Certified Professional</p>
+                            <p class="certificate-date">2021</p>
+                        </div>
+                    </div>
+                    <div class="certificate-card" data-category="sans">
+                        <div class="certificate-img">
+                            <img src="assets/images/gpen.jpg" alt="GPEN">
+                        </div>
+                        <div class="certificate-info">
+                            <h3>GPEN</h3>
+                            <p>GIAC Penetration Tester</p>
+                            <p class="certificate-date">2020</p>
+                        </div>
+                    </div>
+                    <!-- Добавьте больше сертификатов по аналогии -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2023 Red Team Portfolio. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="js/certificates.js"></script>
+</body>
+</html>
