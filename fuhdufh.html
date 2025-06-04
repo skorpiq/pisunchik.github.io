@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>skorpi | Red Team Specialist</title>
+    <style>
+        :root {
+            --burgundy: #800020;
+            --dark-burgundy: #4a0000;
+            --light-burgundy: #a0454e;
+            --terminal-bg: #1e0010;
+            --terminal-text: #f0f0f0;
+            --terminal-command: #000000;
+            --terminal-red: #ff2965;
+            --terminal-blue: #5d8bf4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--dark-burgundy);
+            color: white;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(160, 69, 78, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(160, 69, 78, 0.1) 0%, transparent 20%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header with animated nickname */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--light-burgundy);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .nickname {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: transparent;
+            background: linear-gradient(90deg, #ff2965, #ff8a78, #ff2965);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            animation: shine 3s linear infinite;
+            text-shadow: 0 0 10px rgba(255, 41, 101, 0.3);
+            position: relative;
+        }
+
+        @keyframes shine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .nickname::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff2965, transparent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scaleX(0.8); }
+            50% { opacity: 1; transform: scaleX(1.1); }
+            100% { opacity: 0.3; transform: scaleX(0.8); }
+        }
+
+        .japanese-title {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            margin-left: 10px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Terminal styling */
+        .terminal-container {
+            background-color: var(--terminal-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255, 41, 101, 0.2);
+            overflow: hidden;
+            margin-bottom: 40px;
+            border: 1px solid var(--light-burgundy);
+            animation: terminalEntrance 1s ease-out;
+            position: relative;
+        }
+
+        @keyframes terminalEntrance {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .terminal-header {
+            background: linear-gradient(to right, var(--dark-burgundy), var(--burgundy));
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            margin-right: 15px;
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: transform 0.2s;
+        }
+
+        .terminal-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .btn-red { background-color: #ff5f56; }
+        .btn-yellow { background-color: #ffbd2e; }
+        .btn-green { background-color: #27c93f; }
+
+        .terminal-title {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            flex-grow: 1;
+            text-align: center;
+            animation: titleGlow 3s infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+            to { text-shadow: 0 0 15px rgba(255, 41, 101, 0.7); }
+        }
+
+        .terminal-body {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            color: var(--terminal-text);
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .terminal-line {
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            animation: lineAppear 0.3s ease-out;
+        }
+
+        @keyframes lineAppear {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .terminal-prompt {
+            color: var(--terminal-red);
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: var(--terminal-text);
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            outline: none;
+            flex-grow: 1;
+            caret-color: var(--terminal-red);
+        }
+
+        .terminal-output {
+            width: 100%;
+            margin-top: 5px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            background-color: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--terminal-red);
+            animation: outputSlide 0.4s ease-out;
+        }
+
+        @keyframes outputSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .command-not-found {
+            color: var(--terminal-red);
+        }
+
+        .command-output {
+            color: var(--terminal-command);
+        }
+
+        /* Japanese decorative elements */
+        .japanese-decoration {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 8rem;
+            z-index: -1;
+            font-weight: bold;
+        }
+
+        .decoration-1 {
+            top: 50px;
+            right: 50px;
+            transform: rotate(15deg);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .decoration-2 {
+            bottom: 100px;
+            left: 50px;
+            transform: rotate(-10deg);
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        .decoration-3 {
+            top: 300px;
+            right: 100px;
+            transform: rotate(5deg);
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(15deg); }
+            50% { transform: translateY(-20px) rotate(15deg); }
+            100% { transform: translateY(0) rotate(15deg); }
+        }
+
+        /* Contact section */
+        .contact-section {
+            background: rgba(74, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--light-burgundy);
+            margin-top: 50px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(500px);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-section:hover {
+            transform: perspective(500px) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .contact-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                transparent 65%, 
+                rgba(255, 41, 101, 0.1) 65%, 
+                rgba(255, 41, 101, 0.1) 70%, 
+                transparent 70%),
+                linear-gradient(-45deg, 
+                transparent 65%, 
+                rgba(255, 41, 101, 0.1) 65%, 
+                rgba(255, 41, 101, 0.1) 70%, 
+                transparent 70%);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .contact-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: var(--terminal-red);
+            position: relative;
+            display: inline-block;
+            animation: titlePulse 3s infinite;
+        }
+
+        @keyframes titlePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .contact-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--terminal-red), transparent);
+            animation: lineExtend 2s infinite;
+        }
+
+        @keyframes lineExtend {
+            0% { width: 0; left: 0; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0; left: 100%; }
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-left: 3px solid var(--terminal-red);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--burgundy);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover .contact-icon {
+            transform: rotate(15deg) scale(1.1);
+            background-color: var(--terminal-red);
+        }
+
+        .contact-text {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+
+        .contact-text a {
+            color: var(--terminal-blue);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .contact-text a::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--terminal-blue);
+            transition: width 0.3s;
+        }
+
+        .contact-text a:hover {
+            color: white;
+            text-shadow: 0 0 10px rgba(93, 139, 244, 0.5);
+        }
+
+        .contact-text a:hover::after {
+            width: 100%;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-burgundy);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--light-burgundy);
+            border-radius: 4px;
+        }
+
+        /* Cursor animation */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .nickname {
+                font-size: 1.8rem;
+            }
+            
+            .japanese-title {
+                font-size: 1rem;
+            }
+            
+            .terminal-body {
+                height: 300px;
+            }
+            
+            .japanese-decoration {
+                font-size: 5rem;
+            }
+            
+            .contact-section {
+                padding: 25px;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with animated nickname -->
+        <header>
+            <div class="nickname">skorpi</div>
+            <div class="japanese-title">赤チーム<br>専門家</div>
+        </header>
+
+        <!-- Japanese decorative characters -->
+        <div class="japanese-decoration decoration-1">忍</div>
+        <div class="japanese-decoration decoration-2">影</div>
+        <div class="japanese-decoration decoration-3">闇</div>
+
+        <!-- Terminal section -->
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <div class="terminal-buttons">
+                    <div class="terminal-btn btn-red"></div>
+                    <div class="terminal-btn btn-yellow"></div>
+                    <div class="terminal-btn btn-green"></div>
+                </div>
+                <div class="terminal-title">skorpi@redteam:~</div>
+            </div>
+            <div class="terminal-body" id="terminal">
+                <!-- Terminal content will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Contact section -->
+        <div class="contact-section">
+            <h2 class="contact-title">連絡先 // Contacts</h2>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="contact-icon">✉</div>
+                    <div class="contact-text">Email: <a href="mailto:skorpi@redteam.io">skorpi@redteam.io</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🐦</div>
+                    <div class="contact-text">Twitter: <a href="https://twitter.com/skorpi_rt" target="_blank">@skorpi_rt</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">💻</div>
+                    <div class="contact-text">GitHub: <a href="https://github.com/skorpi-rt" target="_blank">skorpi-rt</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🔒</div>
+                    <div class="contact-text">PGP: <a href="#" onclick="alert('PGP key fingerprint: 4A3F 8B29 6D15 C7E2 1B92 4E1A 9C73 5D28 F4E2 7A1C')">Show fingerprint</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🔗</div>
+                    <div class="contact-text">LinkedIn: <a href="https://linkedin.com/in/skorpi-rt" target="_blank">skorpi-rt</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div class="contact-text">Signal: <a href="#" onclick="alert('Signal: +1 555-789-4567')">Request contact</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const terminal = document.getElementById('terminal');
+            let commandHistory = [];
+            let historyIndex = -1;
+            
+            // Initial terminal content
+            addOutputLine(`Red Team OS [Version 10.0.22621.1413]
+(c) Red Team Corporation. All rights reserved.
+
+Welcome to skorpi's red team environment.
+Type 'help' to list available commands.
+
+`, false);
+            
+            // Create initial prompt
+            createPrompt();
+            
+            // Focus the terminal on click
+            terminal.addEventListener('click', function() {
+                const input = document.querySelector('.terminal-input');
+                if (input) input.focus();
+            });
+            
+            // Terminal commands
+            const commands = {
+                help: {
+                    description: "Display this help message",
+                    execute: function() {
+                        let output = "Available commands:\n\n";
+                        for (const cmd in commands) {
+                            output += `${cmd.padEnd(10)} ${commands[cmd].description}\n`;
+                        }
+                        return output;
+                    }
+                },
+                pwd: {
+                    description: "Print working directory",
+                    execute: function() {
+                        return "/home/skorpi/redteam";
+                    }
+                },
+                ls: {
+                    description: "List directory contents",
+                    execute: function(args) {
+                        if (args.length > 0 && args[0] === '-l') {
+                            return `total 4
+drwxr-xr-x 2 skorpi redteam 4096 Jan 15 14:30 projects
+-rw-r--r-- 1 skorpi redteam 1024 Jan 14 09:22 skills.txt
+-rw-r--r-- 1 skorpi redteam 2048 Jan 13 11:45 experience.log
+drwxr-xr-x 2 skorpi redteam 4096 Jan 12 16:20 certifications`;
+                        } else {
+                            return "projects  skills.txt  experience.log  certifications";
+                        }
+                    }
+                },
+                cat: {
+                    description: "Display file contents",
+                    execute: function(args) {
+                        if (args.length === 0) {
+                            return "cat: missing file operand";
+                        }
+                        
+                        if (args[0] === "skills.txt") {
+                            return `Red Team Skills:
+- Penetration Testing
+- Vulnerability Research
+- Exploit Development
+- Network Security
+- Social Engineering
+- Threat Emulation
+- Malware Analysis`;
+                        } else if (args[0] === "experience.log") {
+                            return `Professional Experience:
+2020-Present: Senior Red Team Operator @ ShadowSec
+2018-2020: Penetration Tester @ CyberFort
+2016-2018: Security Researcher @ HackLab`;
+                        } else {
+                            return `cat: ${args[0]}: No such file or directory`;
+                        }
+                    }
+                },
+                clear: {
+                    description: "Clear the terminal screen",
+                    execute: function() {
+                        terminal.innerHTML = '';
+                        return null; // Special case - no output
+                    }
+                },
+                whoami: {
+                    description: "Display current user",
+                    execute: function() {
+                        return "skorpi";
+                    }
+                },
+                date: {
+                    description: "Show current date and time",
+                    execute: function() {
+                        return new Date().toString();
+                    }
+                }
+            };
+            
+            // Create a new prompt line
+            function createPrompt() {
+                const promptLine = document.createElement('div');
+                promptLine.className = 'terminal-line';
+                
+                const prompt = document.createElement('span');
+                prompt.className = 'terminal-prompt';
+                prompt.textContent = 'skorpi@redteam:~$ ';
+                
+                const input = document.createElement('input');
+                input.className = 'terminal-input';
+                input.type = 'text';
+                input.autofocus = true;
+                
+                promptLine.appendChild(prompt);
+                promptLine.appendChild(input);
+                terminal.insertBefore(promptLine, terminal.firstChild);
+                
+                // Handle input
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        processCommand(input.value);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        navigateHistory(1);
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        navigateHistory(-1);
+                    } else if (e.key === 'Tab') {
+                        e.preventDefault();
+                        autoComplete(input);
+                    }
+                });
+                
+                // Auto-scroll to bottom
+                terminal.scrollTop = 0;
+                input.focus();
+            }
+            
+            // Process a command
+            function processCommand(input) {
+                // Add to history
+                if (input.trim() !== '') {
+                    commandHistory.unshift(input);
+                    historyIndex = -1;
+                }
+                
+                // Display the command
+                addOutputLine(input, true);
+                
+                // Parse command
+                const parts = input.trim().split(/\s+/);
+                const command = parts[0];
+                const args = parts.slice(1);
+                
+                // Execute command
+                if (commands[command]) {
+                    const output = commands[command].execute(args);
+                    if (output !== null) { // Skip output for commands like 'clear'
+                        addOutputLine(output, false);
+                    }
+                } else if (command) {
+                    addOutputLine(`-bash: ${command}: command not found`, false, true);
+                }
+                
+                // Create new prompt
+                createPrompt();
+            }
+            
+            // Add output to terminal
+            function addOutputLine(text, isCommand, isError = false) {
+                const outputLine = document.createElement('div');
+                outputLine.className = 'terminal-line';
+                
+                if (isCommand) {
+                    const prompt = document.createElement('span');
+                    prompt.className = 'terminal-prompt';
+                    prompt.textContent = 'skorpi@redteam:~$ ';
+                    outputLine.appendChild(prompt);
+                }
+                
+                const output = document.createElement('div');
+                output.className = 'terminal-output' + (isError ? ' command-not-found' : ' command-output');
+                output.textContent = text;
+                outputLine.appendChild(output);
+                
+                terminal.insertBefore(outputLine, terminal.firstChild.nextSibling);
+                terminal.scrollTop = 0;
+            }
+            
+            // Navigate command history
+            function navigateHistory(direction) {
+                const inputs = document.querySelectorAll('.terminal-input');
+                const currentInput = inputs[0];
+                
+                if (direction > 0 && historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    currentInput.value = commandHistory[historyIndex];
+                } else if (direction < 0 && historyIndex > 0) {
+                    historyIndex--;
+                    currentInput.value = commandHistory[historyIndex];
+                } else if (direction < 0 && historyIndex === 0) {
+                    historyIndex = -1;
+                    currentInput.value = '';
+                }
+                
+                // Move cursor to end
+                currentInput.selectionStart = currentInput.selectionEnd = currentInput.value.length;
+            }
+            
+            // Simple tab autocomplete
+            function autoComplete(input) {
+                const currentInput = input.value;
+                const commandsList = Object.keys(commands);
+                
+                if (!currentInput) return;
+                
+                const matches = commandsList.filter(cmd => 
+                    cmd.startsWith(currentInput)
+                );
+                
+                if (matches.length === 1) {
+                    input.value = matches[0] + ' ';
+                } else if (matches.length > 1) {
+                    addOutputLine(matches.join('  '), false);
+                    createPrompt();
+                }
+            }
+            
+            // Add some terminal effects
+            function addTerminalEffects() {
+                // Add blinking cursor effect
+                const style = document.createElement('style');
+                style.textContent = `
+                    .terminal-input {
+                        animation: blink 1s step-end infinite;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Add occasional glitch effect
+                setInterval(() => {
+                    if (Math.random() > 0.95) {
+                        terminal.style.transform = 'translateX(2px)';
+                        setTimeout(() => {
+                            terminal.style.transform = 'translateX(-2px)';
+                            setTimeout(() => {
+                                terminal.style.transform = 'translateX(0)';
+                            }, 50);
+                        }, 50);
+                    }
+                }, 5000);
+            }
+            
+            addTerminalEffects();
+        });
+    </script>
+</body>
+</html>
